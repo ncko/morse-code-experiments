@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title></title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="css/style.css" rel="stylesheet">
+	</head>
+	<body>
+		<div>
+			First click this: <button id="init">Initialize</button>
+		</div>
+		<div>
+			Then press the space bar or click this: <button id="toggle">Toggle</button>
+		</div>
+		<div>
+			<button id="dit">dit</button>
+			<button id="dah">dah</button>
+		</div>
+
+		<br />
+		<br />
+		<br />
+		<br />
+		It would be cool if:
+		<ul>
+			<li>it interpreted your dits and dahs.</li>
+		</ul>
+
+		<script>
+			let audioContext = null;
+			let oscillator = null;
+			let gainNode = null;
+			
+			function initialize() {
+				audioContext = new (window.AudioContext || window.webkidAudioContext)();
+	
+				oscillator = audioContext.createOscillator();
+				gainNode = audioContext.createGain();
+	
+				oscillator.connect(gainNode);
+				gainNode.connect(audioContext.destination);
+				
+				oscillator.type = "square";
+				// oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // value in hertz
+				oscillator.frequency.setValueAtTime(660, audioContext.currentTime); // value in hertz
+				oscillator.detune.value = 100;
+				oscillator.start(0);
+	
+				gainNode.gain.value = 0;
+				gainNode.gain.minValue = 0;
+				gainNode.gain.maxValue = 0;
+			}
+
+			const initializeButton = document.querySelector("#init");
+			initializeButton.addEventListener('click', function() {
+				initialize();
+				initializeButton.disabled = true;
+			});
+
+			const toggleButton = document.querySelector("#toggle");
+			toggleButton.addEventListener('mousedown', start);
+			toggleButton.addEventListener('mouseup', stop);
+
+
+			function sleep() {
+				return new Promise(resolve => setTimeout(resolve, 100));
+			}
+
+			function dit() {
+				start();
+				return (new Promise(resolve => setTimeout(function() { stop(); resolve(); }, 100))).then(sleep);
+			}
+
+			function dah() {
+				start();
+				return (new Promise(resolve => setTimeout(function() { stop(); resolve(); }, 250))).then(sleep);
+			}
+
+			function start() {
+				// gainNode.connect(audioContext.destination);
+				gainNode.gain.value = 0.05;
+				gainNode.gain.minValue = 0.05;
+				gainNode.gain.maxValue = 0.05;
+
+			}
+
+			function stop() {
+				// gainNode.disconnect(audioContext.destination);
+				gainNode.gain.value = 0;
+				gainNode.gain.minValue = 0;
+				gainNode.gain.maxValue = 0;
+
+			}
+
+			window.addEventListener("keydown", function(e) {
+				if (e.key == " ") {
+					start();
+				}
+			});
+
+			window.addEventListener("keyup", function(e) {
+				if (e.key == " ") {
+					stop();
+				}
+			});
+
+			const ditBtn = document.querySelector("#dit");
+			ditBtn.addEventListener('click', dit);
+
+			const dahBtn = document.querySelector("#dah");
+			dahBtn.addEventListener('click', dah);
+
+		</script>
+	</body>
+</html>
