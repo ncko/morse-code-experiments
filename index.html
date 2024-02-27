@@ -20,14 +20,32 @@
 
 		<br />
 		<br />
+
+		<div>
+			<input type="text" id="input-string" />
+			<button id="play-string-btn">Play</button>
+		</div>
+
 		<br />
 		<br />
+		<br />
+		<br />
+
+
 		It would be cool if:
 		<ul>
 			<li>it interpreted your dits and dahs.</li>
 		</ul>
 
-		<script>
+				<script>
+			const VOLUME_MAX = 0.05;
+			const FREQUENCY = 440;
+			const DIT_MS = 25;
+			const DAH_MS = Math.floor(2.5 * DIT_MS);
+			const SLEEP_MS = DIT_MS;
+			const SLEEP_LONG_MS = DAH_MS;
+			const SLEEP_X_LONG_MS = DAH_MS + DAH_MS;
+
 			let audioContext = null;
 			let oscillator = null;
 			let gainNode = null;
@@ -43,7 +61,7 @@
 				
 				oscillator.type = "square";
 				// oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // value in hertz
-				oscillator.frequency.setValueAtTime(660, audioContext.currentTime); // value in hertz
+				oscillator.frequency.setValueAtTime(FREQUENCY, audioContext.currentTime); // value in hertz
 				oscillator.detune.value = 100;
 				oscillator.start(0);
 	
@@ -64,25 +82,32 @@
 
 
 			function sleep() {
-				return new Promise(resolve => setTimeout(resolve, 100));
+				return new Promise(resolve => setTimeout(resolve, SLEEP_MS));
+			}
+
+			function sleepLong() {
+				return new Promise(resolve => setTimeout(resolve, SLEEP_LONG_MS));
+			}
+
+			function sleepXLong() {
+				return new Promise(resolve => setTimeout(resolve, SLEEP_X_LONG_MS));
 			}
 
 			function dit() {
 				start();
-				return (new Promise(resolve => setTimeout(function() { stop(); resolve(); }, 100))).then(sleep);
+				return (new Promise(resolve => setTimeout(function() { stop(); resolve(); }, DIT_MS))).then(sleep);
 			}
 
 			function dah() {
 				start();
-				return (new Promise(resolve => setTimeout(function() { stop(); resolve(); }, 250))).then(sleep);
+				return (new Promise(resolve => setTimeout(function() { stop(); resolve(); }, DAH_MS))).then(sleep);
 			}
 
 			function start() {
 				// gainNode.connect(audioContext.destination);
-				gainNode.gain.value = 0.05;
-				gainNode.gain.minValue = 0.05;
-				gainNode.gain.maxValue = 0.05;
-
+				gainNode.gain.value = VOLUME_MAX;
+				gainNode.gain.minValue = VOLUME_MAX;
+				gainNode.gain.maxValue = VOLUME_MAX;
 			}
 
 			function stop() {
@@ -97,6 +122,10 @@
 				if (e.key == " ") {
 					start();
 				}
+
+				if (e.key == "ArrowLeft") {
+					
+				}
 			});
 
 			window.addEventListener("keyup", function(e) {
@@ -110,6 +139,65 @@
 
 			const dahBtn = document.querySelector("#dah");
 			dahBtn.addEventListener('click', dah);
+
+			const alphabet = {
+				a: '.-',
+				b: '-...',
+				c: '-.-.',
+				d: '-..',
+				e: '.',
+				f: '..-.',
+				g: '--.',
+				h: '....',
+				i: '..',
+				j: '.---',
+				k: '-.-',
+				l: '.-..',
+				m: '--',
+				n: '-.',
+				o: '---',
+				p: '.--.',
+				q: '--.-',
+				r: '.-.',
+				s: '...',
+				t: '-',
+				u: '..-',
+				v: '...-',
+				w: '.--',
+				x: '-..-',
+				y: '-.--',
+				z: '--..',
+				'.': '.-.-.-',
+				'?': '..--..',
+				'!': '-.-.--',
+			};
+
+			async function playString(mystr) {
+				const audioSeries = mystr.toLowerCase().split('').reduce((acc, char) => {
+					if (char == ' ') {
+						acc.push(sleepXLong);
+						return acc;
+					}
+	
+					const code = alphabet[char];
+					code.split('').forEach((dot) => {
+						acc.push(dot == '.' ? dit : dah);
+					});
+
+					acc.push(sleepLong);
+					return acc;
+				}, []);
+	
+				for (let i = 0; i < audioSeries.length; i++) {
+					await audioSeries[i]();
+				}
+			}
+
+			const input = document.querySelector('#input-string');
+			document.querySelector('#play-string-btn').addEventListener('click', function() {
+				Promise.resolve(playString(input.value));
+			});
+
 
 		</script>
 	</body>
