@@ -35,6 +35,7 @@
 		"It would be cool if":
 		<ul>
 			<li>it interpreted your dits and dahs.</li>
+			<li>find a way to include <a href="https://en.wikipedia.org/wiki/Prosigns_for_Morse_code">Prosigns</a> like "end of contact."</li>
 		</ul>
 
 				<script>
@@ -167,9 +168,34 @@
 				x: '-..-',
 				y: '-.--',
 				z: '--..',
+				'1': '.----',
+				'2': '..---',
+				'3': '...--',
+				'4': '....-',
+				'5': '.....',
+				'6': '-....',
+				'7': '--...',
+				'8': '---..',
+				'9': '----.',
+				'0': '-----',
 				'.': '.-.-.-',
+				',': '--..--',
 				'?': '..--..',
 				'!': '-.-.--',
+				"'": '.----.',
+				'"': '.-..-.',
+				'(': '-.--.',
+				')': '-.--.-',
+				'&': '.-...',
+				':': '---...',
+				';': '-.-.-.',
+				'/': '-..-.',
+				'_': '..--.-',
+				'=': '-...-',
+				'+': '.-.-.',
+				'-': '-....-',
+				'$': '...-..-',
+				'@': '.--.-.',
 			};
 
 			async function playString(mystr) {
@@ -180,6 +206,12 @@
 					}
 	
 					const code = alphabet[char];
+
+					if (!code) {
+						console.warn(`Character "${char}" is not part of the alphabet. Skipping...`);
+						return acc;
+					}
+
 					code.split('').forEach((dot) => {
 						acc.push(dot == '.' ? dit : dah);
 					});
@@ -189,13 +221,21 @@
 				}, []);
 	
 				for (let i = 0; i < audioSeries.length; i++) {
-					await audioSeries[i]();
+					try {
+						await audioSeries[i]();
+					} catch (e) {
+						console.error(`Error ${e.message}:`, { index: i, value: audioSeries[i] });
+						continue;
+					}
 				}
 			}
 
 			const input = document.querySelector('#input-string');
 			document.querySelector('#play-string-btn').addEventListener('click', function() {
-				Promise.resolve(playString(input.value));
+				// Promise.resolve(playString(input.value));
+				playString(input.value).catch((error) => {
+					console.error(`Error ${error.message}`);
+				});
 			});
 
 
