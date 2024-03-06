@@ -42,10 +42,11 @@
 			const VOLUME_MAX = 0.05;
 			const FREQUENCY = 440;
 			const DIT_MS = 62;
-			const DAH_MS = Math.floor(2.5 * DIT_MS);
-			const SLEEP_MS = DIT_MS;
-			const SLEEP_LONG_MS = DAH_MS;
-			const SLEEP_X_LONG_MS = DAH_MS + DAH_MS;
+			const DAH_MS = Math.floor(3 * DIT_MS);
+			const SLEEP_MS = Math.floor(DIT_MS / 2); // amount of time between dits and dahs within a letter
+			const SLEEP_LONG_MS = DAH_MS; // amount of time between letters
+			const SLEEP_X_LONG_MS = DAH_MS * 2; // amount of time between words
+
 
 			let audioContext = null;
 			let oscillator = null;
@@ -61,7 +62,6 @@
 				gainNode.connect(audioContext.destination);
 				
 				oscillator.type = "square";
-				// oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // value in hertz
 				oscillator.frequency.setValueAtTime(FREQUENCY, audioContext.currentTime); // value in hertz
 				oscillator.detune.value = 100;
 				oscillator.start(0);
@@ -105,14 +105,12 @@
 			}
 
 			function start() {
-				// gainNode.connect(audioContext.destination);
 				gainNode.gain.value = VOLUME_MAX;
 				gainNode.gain.minValue = VOLUME_MAX;
 				gainNode.gain.maxValue = VOLUME_MAX;
 			}
 
 			function stop() {
-				// gainNode.disconnect(audioContext.destination);
 				gainNode.gain.value = 0;
 				gainNode.gain.minValue = 0;
 				gainNode.gain.maxValue = 0;
@@ -122,10 +120,6 @@
 			window.addEventListener("keydown", function(e) {
 				if (e.key == " ") {
 					start();
-				}
-
-				if (e.key == "ArrowLeft") {
-					
 				}
 			});
 
@@ -232,7 +226,6 @@
 
 			const input = document.querySelector('#input-string');
 			document.querySelector('#play-string-btn').addEventListener('click', function() {
-				// Promise.resolve(playString(input.value));
 				playString(input.value).catch((error) => {
 					console.error(`Error ${error.message}`);
 				});
