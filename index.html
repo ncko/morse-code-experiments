@@ -192,6 +192,66 @@
 				'@': '.--.-.',
 			};
 
+			function generateStateMachine(alphabet) {
+				const keys = Object.keys(alphabet);
+				const machine = {};
+
+				for (const key of keys) {
+					const str = alphabet[key].split('');
+
+					let ref = machine;
+					for (let i = 0; i < str.length; i++) {
+						const character = str[i];
+
+						if(!ref[character]) {
+							ref[character] = {};
+						}
+						ref = ref[character];
+						
+						if (i === str.length - 1) { // last character
+							ref.symbol = key;
+						}
+					}
+				}
+
+				return machine;
+			}
+
+			const machine = generateStateMachine(alphabet);
+
+			function transition(character, state) {
+				return state[character];
+			}
+
+			function interpreter(machine) {
+				return function interpret(str) {
+					let state = machine;
+					for (let i = 0; i < str.length; i++) {
+						state = transition(str[i], state);
+					}
+					return state.symbol;
+				}
+			}
+
+			const interpret = interpreter(machine);
+
+			function symbolToMorseCode(words) {
+				return words.toLowerCase().split('').map((symbol) => {
+					if (/\s/.test(symbol)) {
+						return ' ';
+					}
+
+					return alphabet[symbol]
+				}).join(' ');
+			}
+
+			function morseCodeToSymbol(morseCode) {
+				return morseCode.split(' ').map(interpret).join('');
+			}
+
+			console.log('to morse code:', symbolToMorseCode("Hello, World!"));
+			console.log('to symbol:', morseCodeToSymbol('.... . .-.. .-.. --- --..--   .-- --- .-. .-.. -.. -.-.--'));
+
 			async function playString(mystr) {
 				const audioSeries = mystr.toLowerCase().split('').reduce((acc, char) => {
 					if (char == ' ') {
